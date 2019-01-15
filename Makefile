@@ -6,6 +6,7 @@
 COMPILE_PLATFORM=$(shell uname | sed -e 's/_.*//' | tr '[:upper:]' '[:lower:]' | sed -e 's/\//_/g')
 COMPILE_ARCH=$(shell uname -m | sed -e 's/i.86/x86/' | sed -e 's/^arm.*/arm/')
 
+
 ifeq ($(COMPILE_PLATFORM),sunos)
   # Solaris uname and GNU uname differ
   COMPILE_ARCH=$(shell uname -p | sed -e 's/i.86/x86/')
@@ -88,7 +89,12 @@ ifeq ($(COMPILE_ARCH),axp)
 endif
 
 ifndef ARCH
-ARCH=$(COMPILE_ARCH)
+  ARCH=$(COMPILE_ARCH)
+  ifeq($(COMPILE_ARCH), arm)
+    # Kind of a hack: we need to know which ARM we're on
+    # because the VM only supports v7l right now.
+    ARM_VERSION=$(shell uname -m | sed -e 's/^arm\(.*\)/\1/')
+  endif
 endif
 export ARCH
 
@@ -372,9 +378,11 @@ ifneq (,$(findstring "$(PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu" "gnu")
     OPTIMIZE += -mtune=ultrasparc3 -mv8plus
     OPTIMIZEVM += -mtune=ultrasparc3 -mv8plus
     HAVE_VM_COMPILED=true
-  endif
-  ifeq ($(ARCH),armv7l)
-    HAVE_VM_COMPILED=true
+  
+  ifeq ($(ARCH),arm)
+    ifeq($(ARM_VERSION), v7l)
+      HAVE_VM_COMPILED=true
+    endif
   endif
   ifeq ($(ARCH),alpha)
     # According to http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=410555
@@ -2160,8 +2168,10 @@ ifeq ($(HAVE_VM_COMPILED),true)
   ifeq ($(ARCH),sparc)
     Q3OBJ += $(B)/client/vm_sparc.o
   endif
-  ifeq ($(ARCH),armv7l)
-    Q3OBJ += $(B)/client/vm_armv7l.o
+  ifeq ($(ARCH),arm)
+    ifeq($(ARM_VERSION), v7l)
+      Q3OBJ += $(B)/client/vm_armv7l.o
+    endif
   endif
 endif
 
@@ -2332,8 +2342,10 @@ ifeq ($(HAVE_VM_COMPILED),true)
   ifeq ($(ARCH),sparc)
     Q3DOBJ += $(B)/ded/vm_sparc.o
   endif
-  ifeq ($(ARCH),armv7l)
-    Q3DOBJ += $(B)/client/vm_armv7l.o
+  ifeq ($(ARCH),arm)
+    ifeq ($(ARM_VERSION),v7l)
+      Q3DOBJ += $(B)/client/vm_armv7l.o
+    endif
   endif
 endif
 
