@@ -373,7 +373,7 @@ ifneq (,$(findstring "$(PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu" "gnu")
     OPTIMIZEVM += -mtune=ultrasparc3 -mv8plus
     HAVE_VM_COMPILED=true
   endif
-  ifeq ($(ARCH),armv7l)
+  ifeq ($(ARCH),arm)
     HAVE_VM_COMPILED=true
   endif
   ifeq ($(ARCH),alpha)
@@ -2160,7 +2160,7 @@ ifeq ($(HAVE_VM_COMPILED),true)
   ifeq ($(ARCH),sparc)
     Q3OBJ += $(B)/client/vm_sparc.o
   endif
-  ifeq ($(ARCH),armv7l)
+  ifeq ($(ARCH),arm)
     Q3OBJ += $(B)/client/vm_armv7l.o
   endif
 endif
@@ -2332,7 +2332,7 @@ ifeq ($(HAVE_VM_COMPILED),true)
   ifeq ($(ARCH),sparc)
     Q3DOBJ += $(B)/ded/vm_sparc.o
   endif
-  ifeq ($(ARCH),armv7l)
+  ifeq ($(ARCH),arm)
     Q3DOBJ += $(B)/client/vm_armv7l.o
   endif
 endif

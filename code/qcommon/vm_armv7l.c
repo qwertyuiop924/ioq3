@@ -36,10 +36,12 @@ ARMv7-A_ARMv7-R_DDI0406_2007.pdf
 #include <time.h>
 #include <stddef.h>
 
+#include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "../qcommon/q_shared.h"
 #include "vm_local.h"
 #define R0	0
 #define R1	1
@@ -594,6 +596,26 @@ err:
 	DIE("jump %d out of range at %d", x, pc);
 }
 
+/* 
+===============
+Arm_IsV7l
+Checks if we're running on armv7l, and thus if our vm can run.
+Check is based on system uname, which is not strictly ideal, but
+it seems to be the best way to do it, as cpuinfo is privileged.
+===============
+*/
+qboolean Arm_IsV7l(){
+	#ifdef __linux__
+	struct utsname info;
+	if (uname(&info)==-1) return qfalse;
+	return !Q_strncmp(info.machine,"armv7",5)&&Q_stristr(info.machine,"l")?qtrue:qfalse; 
+	#else
+	return qfalse
+		//if we're not linux, our check may not work:
+		//utsname.machine has no official format, AFAIK.  We assume false.
+	#endif
+}
+
 void VM_Compile(vm_t *vm, vmHeader_t *header)
 {
 	unsigned char *code;
@@ -610,7 +632,7 @@ void VM_Compile(vm_t *vm, vmHeader_t *header)
 #define OFF_IMMEDIATES 1
 
 	vm->compiled = qfalse;
-
+	if(Arm_IsV7l()==qfalse) return; //don't compile on armv6.
 	vm->codeBase = NULL;
 	vm->codeLength = 0;
 
